@@ -18,11 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ecmmerce.Model.CartItem;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,8 +36,6 @@ public class CartActivity extends AppCompatActivity {
     ImageView homeIcon, accIcon, cartIcon;
 
     private LinearLayout emptyView;
-    private View stickyBottomContainer;
-
     private double currentTotalAmount = 0.0;
     private String token;
 
@@ -48,13 +44,11 @@ public class CartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-
+        // ভিউ ইনিশিয়ালাইজেশন
         recyclerView = findViewById(R.id.recyclerViewCart);
         tvTotalPrice = findViewById(R.id.tvTotalPrice);
         btnCheckout = findViewById(R.id.btnCheckout);
         emptyView = findViewById(R.id.emptyView);
-        stickyBottomContainer = findViewById(R.id.stickyBottomContainer);
-
         homeIcon = findViewById(R.id.btnHomeIcon);
         accIcon = findViewById(R.id.btnAccIcon);
         cartIcon = findViewById(R.id.btnCartIcon);
@@ -65,36 +59,47 @@ public class CartActivity extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
         token = sp.getString("token", "");
 
+        // চেকআউট বাটন লজিক
         btnCheckout.setOnClickListener(v -> {
             if (token.isEmpty()) {
                 Toast.makeText(this, "Login Required", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Map<String, Object> orderData = new HashMap<>();
-            orderData.put("total_amount", currentTotalAmount);
+            if (currentTotalAmount <= 0) {
+                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-            apiService.placeOrder("Bearer " + token, orderData).enqueue(new Callback<ResponseBody>() {
+            // ১. শুধু পেমেন্ট ইনিশিয়ালাইজ করুন
+            apiService.initPayment("Bearer " + token, currentTotalAmount).enqueue(new Callback<Map<String, String>>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CartActivity.this, "Order placed successfully!", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(CartActivity.this, OrderHistoryActivity.class));
-                        finish();
+                public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String url = response.body().get("url");
+
+                        // ২. পেমেন্ট ইউআরএল নিয়ে PaymentActivity (WebView) তে যান
+                        Intent intent = new Intent(CartActivity.this, PaymentActivity.class);
+                        intent.putExtra("payment_url", url);
+                        startActivity(intent);
                     } else {
-                        Toast.makeText(CartActivity.this, "Failed: " + response.code(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CartActivity.this, "Failed to initialize payment", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e("OrderError", t.getMessage());
+                public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                    Toast.makeText(CartActivity.this, "Server Connection Error", Toast.LENGTH_SHORT).show();
                 }
             });
+
+            // দ্রষ্টব্য: এখানে আগের placeOrder কলটি মুছে ফেলা হয়েছে।
+            // অর্ডার সেভ করার কাজ এখন লারাভেলের success() মেথড করবে।
         });
 
         loadCart();
 
+        // নেভিগেশন আইকন ক্লিক
         homeIcon.setOnClickListener(v -> startActivity(new Intent(CartActivity.this, MainActivity.class)));
         cartIcon.setOnClickListener(v -> loadCart());
         accIcon.setOnClickListener(v -> startActivity(new Intent(CartActivity.this, OrderHistoryActivity.class)));
@@ -106,7 +111,6 @@ public class CartActivity extends AppCompatActivity {
             public void onResponse(Call<List<CartItem>> call, Response<List<CartItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     cartList = response.body();
-
                     if (cartList.isEmpty()) {
                         updateUI(true);
                     } else {
@@ -123,18 +127,15 @@ public class CartActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<List<CartItem>> call, Throwable t) {
                 updateUI(true);
-                Toast.makeText(CartActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(CartActivity.this, "Error loading cart", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 
     private void updateUI(boolean isEmpty) {
         if (isEmpty) {
             recyclerView.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
-
-
             findViewById(R.id.layoutBottom).setVisibility(View.GONE);
         } else {
             recyclerView.setVisibility(View.VISIBLE);

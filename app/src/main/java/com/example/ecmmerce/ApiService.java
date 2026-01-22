@@ -82,6 +82,13 @@ public interface ApiService {
 
     @GET("orders/history")
     Call<List<Order>> getOrderHistory(@Header("Authorization") String token);
+
+    @FormUrlEncoded
+    @POST("payment/init")
+    Call<Map<String, String>> initPayment(
+            @Header("Authorization") String token,
+            @Field("total_amount") double amount
+    );
 }
 
 
