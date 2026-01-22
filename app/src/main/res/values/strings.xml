@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Ecmmerce</string>
+    <string name="app_name">eCommerce</string>
+    <string name="app_title">E-Commerce App</string>
+    <string name="todo">TODO</string>
 </resources>

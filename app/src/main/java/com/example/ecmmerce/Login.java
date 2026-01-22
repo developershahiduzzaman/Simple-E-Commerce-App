@@ -1,6 +1,7 @@
 package com.example.ecmmerce;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -13,12 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.ecmmerce.Model.LoginRequest;
 import com.example.ecmmerce.Model.LoginResponse;
 
-import org.json.JSONObject;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 
 public class Login extends AppCompatActivity {
 
@@ -36,65 +34,52 @@ public class Login extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
 
-        tvRegisterLink.setOnClickListener(v -> {
-            startActivity(new Intent(Login.this, Register.class));
-        });
+        tvRegisterLink.setOnClickListener(v -> startActivity(new Intent(Login.this, Register.class)));
 
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
             if(email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(Login.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Fill all fields", Toast.LENGTH_SHORT).show();
             } else {
                 loginUser(email, password);
             }
         });
     }
 
-    private void loginUser(String email, String password) {
+    private void loginUser(String email, String password){
         LoginRequest request = new LoginRequest(email, password);
         RetrofitClient.getApiService().loginUser(request).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                try {
-                    if (response.isSuccessful() && response.body() != null) {
-                        // JSON object response
-                        LoginResponse loginResponse = response.body();
-                        Toast.makeText(Login.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                if(response.isSuccessful() && response.body() != null){
+                    String token = response.body().getToken();
+                    LoginResponse loginResponse = response.body();
 
-                        if (loginResponse.isSuccess()) {
-                            Intent intent = new Intent(Login.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        }
+                    // Save token + userId
+                    SharedPreferences sp = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sp.edit();
+                    editor.putString("token", token); // Key: "token"
+                    editor.apply();
+                    Log.d("LOGIN_DEBUG", "Token Saved: " + token);
 
-                    } else if (response.errorBody() != null) {
-                        // Error response (401, 422 etc)
-                        String errorString = response.errorBody().string();
-                        try {
-                            JSONObject obj = new JSONObject(errorString);
-                            String message = obj.optString("message", "Login failed");
-                            Toast.makeText(Login.this, message, Toast.LENGTH_SHORT).show();
-                        } catch (Exception e) {
-                            // যদি response plain string বা HTML হয়
-                            Toast.makeText(Login.this, errorString, Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(Login.this, "Server error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Login.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    if(loginResponse.isSuccess()){
+                        startActivity(new Intent(Login.this, MainActivity.class));
+                        finish();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(Login.this, "Unexpected error", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Login.this, "Login failed", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
                 t.printStackTrace();
-                Toast.makeText(Login.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(Login.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
     }
-
 }

@@ -1,6 +1,9 @@
 package com.example.ecmmerce;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +22,11 @@ public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     ProductAdapter adapter;
+
+    ImageView homeIcon;
+    ImageView accIcon;
+    ImageView cartIcon;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,5 +56,35 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Failed to load products", Toast.LENGTH_SHORT).show();
             }
         });
+
+        homeIcon = findViewById(R.id.btnHomeIcon);
+        accIcon = findViewById(R.id.btnAccIcon);
+        cartIcon = findViewById(R.id.btnCartIcon);
+
+        cartIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, CartActivity.class));
+
+            }
+        });
+
+        homeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
+
+            }
+        });
+
+        accIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, OrderHistoryActivity.class));
+
+            }
+        });
+
+
     }
 }

@@ -2,37 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#3F51B5"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="@string/app_title"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        tools:ignore="MissingConstraints" />
-
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+    android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="#3F51B5"
@@ -45,7 +18,6 @@
             android:id="@+id/btnCartIcon"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:contentDescription="@string/todo"
             android:padding="10dp"
             android:src="@drawable/bag"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -59,7 +31,6 @@
             android:id="@+id/btnAccIcon"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:contentDescription="@string/todo"
             android:padding="10dp"
             android:src="@drawable/outline_account_child_24"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -74,7 +45,6 @@
             android:id="@+id/btnHomeIcon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:contentDescription="@string/todo"
             android:padding="10dp"
             android:src="@drawable/home"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -86,5 +56,6 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
