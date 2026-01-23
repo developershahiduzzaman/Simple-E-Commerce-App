@@ -3,6 +3,18 @@
 
 This repository contains the mobile application for the Simple E-Commerce project. It is fully integrated with a Laravel REST API and features a complete shopping experience with a focus on modern UI and secure API communication.
 
+
+---
+
+## 📥 Download App
+You can download the latest version of the app by clicking the button below:
+
+[![Download APK](https://img.shields.io/badge/Download-APK-green?style=for-the-badge&logo=android&logoColor=white)](https://github.com/developershahiduzzaman/Simple-E-Commerce-App/releases/download/v1.0.0/Simple-E-Commerce-App.apk.apk)
+
+> **Quick Tip:** If the download link doesn't start automatically, right-click and select "Save link as...".
+
+
+
 ---
 
 ## 🚀 7-Day Roadmap (Project Progress)
