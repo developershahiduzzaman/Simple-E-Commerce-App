@@ -35,6 +35,13 @@ public interface ApiService {
     @POST("register")
     Call<RegisterResponse> registerUser(@Body RegisterRequest request);
 
+    @POST("email/verification-notification")
+    Call<ResponseBody> resendVerificationEmail(@Header("Authorization") String token);
+
+    @POST("logout")
+    Call<ResponseBody> logoutUser(@Header("Authorization") String token);
+
+
 
     @GET("products")
     Call<List<Product>> getProducts();

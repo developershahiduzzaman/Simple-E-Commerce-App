@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.ecmmerce.Model.LoginRequest;
@@ -50,20 +51,27 @@ public class Login extends AppCompatActivity {
 
     private void loginUser(String email, String password){
         LoginRequest request = new LoginRequest(email, password);
+
         RetrofitClient.getApiService().loginUser(request).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if(response.isSuccessful() && response.body() != null){
-                    String token = response.body().getToken();
                     LoginResponse loginResponse = response.body();
 
-                    // Save token + userId
+                    // check verify
+                    if (loginResponse.getUser() != null && loginResponse.getUser().getEmailVerifiedAt() == null) {
+                        showVerificationDialog();
+                        return;
+                    }
+
+                    // save token
+                    String token = loginResponse.getToken();
                     SharedPreferences sp = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
                     SharedPreferences.Editor editor = sp.edit();
-                    editor.putString("token", token); // Key: "token"
+                    editor.putString("token", token);
                     editor.apply();
-                    Log.d("LOGIN_DEBUG", "Token Saved: " + token);
 
+                    Log.d("LOGIN_DEBUG", "Token Saved: " + token);
                     Toast.makeText(Login.this, loginResponse.getMessage(), Toast.LENGTH_SHORT).show();
 
                     if(loginResponse.isSuccess()){
@@ -71,15 +79,29 @@ public class Login extends AppCompatActivity {
                         finish();
                     }
                 } else {
-                    Toast.makeText(Login.this, "Login failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Login.this, "Invalid credentials or Server error", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
                 t.printStackTrace();
-                Toast.makeText(Login.this, "Network error", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Login.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    
+    private void showVerificationDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Email Verification Required")
+                .setMessage("Your email is not verified yet. Please check your inbox and click the verification link.")
+                .setPositiveButton("Open Email", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.addCategory(Intent.CATEGORY_APP_EMAIL);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 }

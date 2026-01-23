@@ -17,8 +17,15 @@ public class LoginResponse {
     @SerializedName("user_id")
     private int userId;
 
+    @SerializedName("user")
+    private User user;
+
     // Default constructor
     public LoginResponse() {}
+
+    public User getUser() { return user; }
+
+
 
     // Full constructor
     public LoginResponse(boolean success, String token, String message, int userId) {
